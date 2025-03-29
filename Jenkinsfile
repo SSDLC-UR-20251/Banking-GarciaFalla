@@ -23,5 +23,23 @@ pipeline {
                 sh 'docker ps'
             }
         }
+        // Nueva etapa para ejecutar las pruebas de validation.py
+        stage('Ejecutar pruebas de validation.py') {
+            steps {
+                script {
+                    // Ejecutar las pruebas dentro del contenedor de Docker
+                    sh 'docker exec mi_app_container python3 /app/validation.py'
+                }
+            }
+        }
+        // Nueva etapa para ejecutar las pruebas de selenium en test_banking.py
+        stage('Ejecutar pruebas de Selenium en test_banking.py') {
+            steps {
+                script {
+                    // Ejecutar las pruebas de Selenium en test_banking.py
+                    sh 'docker exec mi_app_container pytest /test_banking.py'
+                }
+            }
+        }
     }
 }
