@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 jobs:
-  1_secret-detection:
+  secret-detection:
     runs-on: ubuntu-latest
 
     steps:
@@ -71,7 +71,7 @@ jobs:
           # Aquí se puede agregar un script para enviar una notificación por email o Slack
 
 
-  2_semgrep_B:
+  semgrep_B:
     runs-on: ubuntu-latest
     container:
       image: semgrep/semgrep
@@ -88,7 +88,7 @@ jobs:
         env:
           SEMGREP_BASELINE_REF: main
         run: semgrep ci
-  2_semgrep_C:
+  semgrep_C:
       runs-on: ubuntu-latest
       container:
         image: semgrep/semgrep
@@ -106,7 +106,7 @@ jobs:
             SEMGREP_BASELINE_REF: main
           run: semgrep ci --config "p/default" --pro-intrafile
 
-  2_semgrep_D:
+  semgrep_D:
      runs-on: ubuntu-latest
      container:
        image: semgrep/semgrep
@@ -130,5 +130,3 @@ jobs:
          env:
            SEMGREP_BASELINE_REF: main
          run: semgrep ci --config "p/default" --pro-intrafile
-
-         
