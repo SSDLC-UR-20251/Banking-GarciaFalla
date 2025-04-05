@@ -94,7 +94,7 @@ jobs:
      container:
        image: semgrep/semgrep
      env:
-       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+       SEMGREP_APP_TOKEN: c2a43058b0bfe83483ee27321dc5f94a7b600d10343a44084fa3ba521631cf5e
        # Opcionalmente, agrega otras variables para mejorar los hipervínculos en Semgrep AppSec Platform:
        # SEMGREP_REPO_NAME: your-repo-name
        # SEMGREP_REPO_URL: https://github.com/your-org/your-repo
@@ -114,4 +114,5 @@ jobs:
            SEMGREP_BASELINE_REF: main
 
          run: semgrep ci --config "p/default" --pro-intrafile
+
 
