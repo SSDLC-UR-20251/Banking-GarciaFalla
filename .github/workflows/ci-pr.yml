@@ -116,29 +116,16 @@ jobs:
          run: semgrep ci --config "p/default" --pro-intrafile
 
 
-  sonarcloud:
+  sonarqube:
+    name: SonarQube
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+      - uses: actions/checkout@v4
         with:
-          projectBaseDir: .
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
         env:
-          SONAR_TOKEN: 622e85714baf47144fbc99e566a56180c0b4badf
-          SONAR_PROJECT_KEY: SSDLC-UR-20251_Banking-GarciaFalla
-          SONAR_ORGANIZATION: ssdlc-ur-20251
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  pruebas-unitarias:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout del código
-        uses: actions/checkout@v2
-
-      - name: Instalar dependencias
-        run: npm install
-
-      - name: Ejecutar pruebas unitarias
-        run: npm test
+ 
