@@ -131,9 +131,14 @@ jobs:
           SONAR_PROJECT_KEY: SSDLC-UR-20251_Banking-GarciaFalla
           SONAR_ORGANIZATION: ssdlc-ur-20251
 
-  PruebasUnitarias:
+  pruebas-unitarias:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v2
+
       - name: Instalar dependencias
         run: npm install
 
-      - name: Ejecutar pruebas
+      - name: Ejecutar pruebas unitarias
         run: npm test
