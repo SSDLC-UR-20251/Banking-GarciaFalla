@@ -116,3 +116,15 @@ jobs:
          run: semgrep ci --config "p/default" --pro-intrafile
 
 
+  sonarcloud:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          projectBaseDir: .
+        env:
+          SONAR_TOKEN: 622e85714baf47144fbc99e566a56180c0b4badf
