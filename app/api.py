@@ -4,6 +4,8 @@ from app.validation import *
 from app.reading import *
 from flask import request, jsonify, redirect, url_for, render_template, session, make_response
 from app import app
+from app.encryption import hash_with_salt  # Importar la función de hash con sal
+from Crypto.Hash import SHA256
 
 
 @app.route('/api/users', methods=['POST'])
@@ -39,19 +41,22 @@ def create_record():
 
     email = normalize_input(email)
 
+    # Generar hash y sal para la contraseña
+    hash_result, salt = hash_with_salt(password)
+
     db = read_db("db.txt")
     db[email] = {
         'nombre': normalize_input(nombre),
         'apellido': normalize_input(apellido),
         'username': normalize_input(username),
-        'password': normalize_input(password),
+        'password': hash_result,  # Almacenar el hash
+        'salt': salt,  # Almacenar la sal
         "dni": dni,
         'dob': normalize_input(dob),
     }
 
     write_db("db.txt", db)
     return redirect("/login")
-
 
 
 # Endpoint para el login
@@ -65,18 +70,25 @@ def api_login():
         error = "Credenciales inválidas"
         return render_template('login.html', error=error)
 
-    password_db = db.get(email)["password"]
+    user_data = db.get(email)
+    stored_hash = user_data["password"]
+    salt = user_data["salt"]
 
-    if password_db == password :
+    # Generar hash de la contraseña proporcionada con la sal almacenada
+    h = SHA256.new()
+    h.update(bytes.fromhex(salt) + password.encode('utf-8'))
+    provided_hash = h.hexdigest()
+
+    # Comparar el hash proporcionado con el hash almacenado
+    if provided_hash == stored_hash:
         return redirect(url_for('customer_menu'))
     else:
+        error = "Credenciales inválidas"
         return render_template('login.html', error=error)
-
 
 # Página principal del menú del cliente
 @app.route('/customer_menu')
 def customer_menu():
-
     db = read_db("db.txt")
 
     transactions = read_db("transaction.txt")
@@ -90,7 +102,6 @@ def customer_menu():
                            balance=current_balance,
                            last_transactions=last_transactions,
                            error=error,)
-
 
 # Endpoint para leer un registro
 @app.route('/records', methods=['GET'])
