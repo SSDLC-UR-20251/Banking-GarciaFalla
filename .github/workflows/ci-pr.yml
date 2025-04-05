@@ -132,8 +132,8 @@ jobs:
           SONAR_ORGANIZATION: ssdlc-ur-20251
 
   PruebasUnitarias:
-    - name: Instalar dependencias
-      run: npm install
+      - name: Instalar dependencias
+        run: npm install
 
-    - name: Ejecutar pruebas
-      run: npm test
+      - name: Ejecutar pruebas
+        run: npm test
