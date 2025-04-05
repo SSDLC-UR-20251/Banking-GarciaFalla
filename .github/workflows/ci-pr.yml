@@ -130,3 +130,10 @@ jobs:
           SONAR_TOKEN: 622e85714baf47144fbc99e566a56180c0b4badf
           SONAR_PROJECT_KEY: SSDLC-UR-20251_Banking-GarciaFalla
           SONAR_ORGANIZATION: ssdlc-ur-20251
+
+  PruebasUnitarias:
+    - name: Instalar dependencias
+      run: npm install
+
+    - name: Ejecutar pruebas
+      run: npm test
