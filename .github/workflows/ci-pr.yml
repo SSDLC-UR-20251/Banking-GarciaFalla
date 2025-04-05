@@ -1,8 +1,17 @@
-on:
-  pull_request:
-    branches:["main"]
+name: 'detect-secrets Action'
+description: 'Scans your GitHub repository for accidentally committed secrets, enhances code security, and aids in secret cleanup.'
+branding:
+  icon: 'alert-octagon'
+  color: 'red'
   
-     
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+      
 jobs:
   secret-detection:
     runs-on: ubuntu-latest
@@ -43,7 +52,7 @@ jobs:
           cp .secrets.baseline .secrets.new
 
           # find the secrets in the repository
-          detect-secrets scan --baseline .secrets.new --exclude-files '.secrets.*' --exclude-files '.git*' > result.json
+          detect-secrets scan --baseline .secrets.new --exclude-files '.secrets.*' --exclude-files '.git*'
                
           # if there is any difference between the known and newly detected secrets, break the build
           # Function to compare secrets without listing them
@@ -63,9 +72,3 @@ jobs:
             echo "Your efforts to maintain the security of our codebase are greatly appreciated!" >&2
             exit 1
           fi
-      -name: Guardar artefacto detect-secrets
-        uses: actions/upload-artifact@v4
-        with:
-          name: secrets
-          path: ./results.json
-          
