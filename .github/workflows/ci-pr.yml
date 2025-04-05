@@ -71,20 +71,20 @@ jobs:
           # Aquí se puede agregar un script para enviar una notificación por email o Slack
 
 
-    semgrep:
-      runs-on: ubuntu-latest
-      container:
-        image: semgrep/semgrep
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v2
+  semgrep:
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-        - name: Run Semgrep full scan
-          if: ${{ github.ref == 'refs/heads/main' }}
-          run: semgrep ci
+      - name: Run Semgrep full scan
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: semgrep ci
 
-        - name: Run Semgrep diff scan
-          if: ${{ github.ref != 'refs/heads/main' }}
-          env:
-            SEMGREP_BASELINE_REF: main
-          run: semgrep ci
+      - name: Run Semgrep diff scan
+        if: ${{ github.ref != 'refs/heads/main' }}
+        env:
+          SEMGREP_BASELINE_REF: main
+        run: semgrep ci
