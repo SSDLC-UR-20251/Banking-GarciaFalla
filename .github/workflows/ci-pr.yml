@@ -71,7 +71,7 @@ jobs:
           # Aquí se puede agregar un script para enviar una notificación por email o Slack
 
 
-  semgrep:
+  semgrep_B:
     runs-on: ubuntu-latest
     container:
       image: semgrep/semgrep
@@ -88,3 +88,20 @@ jobs:
         env:
           SEMGREP_BASELINE_REF: main
         run: semgrep ci
+  semgrep_C:
+      runs-on: ubuntu-latest
+      container:
+        image: semgrep/semgrep
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+
+        - name: Run Semgrep full scan with custom configuration
+          if: ${{ github.ref == 'refs/heads/main' }}
+          run: semgrep ci --config "p/default" --pro-intrafile --error
+
+        - name: Run Semgrep diff scan with custom configuration
+          if: ${{ github.ref != 'refs/heads/main' }}
+          env:
+            SEMGREP_BASELINE_REF: main
+          run: semgrep ci --config "p/default" --pro-intrafile --error
