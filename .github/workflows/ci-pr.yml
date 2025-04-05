@@ -9,7 +9,7 @@ on:
   pull_request:
     branches:
       - main
-      
+
 jobs:
   secret-detection:
     runs-on: ubuntu-latest
