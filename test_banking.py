@@ -14,9 +14,6 @@ driver.get("http://127.0.0.1:5000/login")
 
 
 
-driver.find_element(By.ID, "email").send_keys("maria.gonzalez@urosario.edu.co")
-driver.find_element(By.ID, "password").send_keys("Password123#")
-driver.find_element(By.ID, "login").click()
 
 time.sleep(2)
 
@@ -52,8 +49,6 @@ driver = webdriver.Chrome()
 
 driver.get("http://127.0.0.1:5000/login") 
 
-driver.find_element(By.ID, "email").send_keys("maria.gonzalez@urosario.edu.co")
-driver.find_element(By.ID, "password").send_keys("Password123#")
 driver.find_element(By.ID, "login").click()
 
 time.sleep(2)
@@ -67,7 +62,7 @@ driver.find_element(By.ID, "Withdraw_button").click()
 time.sleep(2)
 
 driver.find_element(By.ID, "balance").send_keys("10")
-driver.find_element(By.ID, "password").send_keys("Password123#")
+
 driver.find_element(By.ID, "withdraw_buttom").click()
 
 time.sleep(2)
@@ -81,7 +76,7 @@ driver = webdriver.Chrome()
 
 driver.get("http://127.0.0.1:5000/login") 
 
-driver.find_element(By.ID, "email").send_keys("maria.gonzalez@urosario.edu.co")
+
 driver.find_element(By.ID, "password").send_keys("-----------------")
 driver.find_element(By.ID, "login").click()
 
