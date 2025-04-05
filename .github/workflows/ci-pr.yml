@@ -105,3 +105,28 @@ jobs:
           env:
             SEMGREP_BASELINE_REF: main
           run: semgrep ci --config "p/default" --pro-intrafile
+
+  semgrep_D:
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    env:
+      SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+      # Opcionalmente, agrega otras variables para mejorar los hipervínculos en Semgrep AppSec Platform:
+      # SEMGREP_REPO_NAME: your-repo-name
+      # SEMGREP_REPO_URL: https://github.com/your-org/your-repo
+      # SEMGREP_BRANCH: ${{ github.ref_name }}
+      # SEMGREP_COMMIT: ${{ github.sha }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run Semgrep full scan with custom configuration
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: semgrep ci --config "p/default" --pro-intrafile --error
+
+      - name: Run Semgrep diff scan with custom configuration
+        if: ${{ github.ref != 'refs/heads/main' }}
+        env:
+          SEMGREP_BASELINE_REF: main
+        run: semgrep ci --config "p/default" --pro-intrafile --error
