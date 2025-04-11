@@ -124,5 +124,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner | toLower }}/bankingsystem:latest
-            ghcr.io/${{ github.repository_owner | toLower }}/bankingsystem:${{ env.SHORT_SHA }}
+            ghcr.io/${{ github.repository_owner }}/bankingsystem:latest
+            ghcr.io/${{ github.repository_owner }}/bankingsystem:${{ env.SHORT_SHA }}
