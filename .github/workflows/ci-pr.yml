@@ -54,42 +54,7 @@ jobs:
           path: results.json
           
 
-  semgrep_B:
-    runs-on: ubuntu-latest
-    container:
-      image: semgrep/semgrep
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Run Semgrep full scan
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: semgrep ci
-
-      - name: Run Semgrep diff scan
-        if: ${{ github.ref != 'refs/heads/main' }}
-        env:
-          SEMGREP_BASELINE_REF: main
-        run: semgrep ci
-  semgrep_C:
-      runs-on: ubuntu-latest
-      container:
-        image: semgrep/semgrep
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v2
-
-        - name: Run Semgrep full scan with custom configuration
-          if: ${{ github.ref == 'refs/heads/main' }}
-          run: semgrep ci --config "p/default" --pro-intrafile
-
-        - name: Run Semgrep diff scan with custom configuration
-          if: ${{ github.ref != 'refs/heads/main' }}
-          env:
-            SEMGREP_BASELINE_REF: main
-          run: semgrep ci --config "p/default" --pro-intrafile
-
-  semgrep_D:
+  semgrep:
      runs-on: ubuntu-latest
      container:
        image: semgrep/semgrep
@@ -128,4 +93,32 @@ jobs:
         env:
           SONAR_TOKEN: 120d54a4fced5114acf24135d1d5b85f1db31d32
 
- 
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:                                         #Aquí se logea a github packages, las variables son automaticas, no hay que ingresarlas
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract short SHA
+        id: vars
+        run: echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
+
+      - name: Build and push Docker image                     #El etiquetado de la imagén con hash
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/bankingsystem:latest
+            ghcr.io/${{ github.repository_owner }}/bankingsystem:${{ env.SHORT_SHA }}
