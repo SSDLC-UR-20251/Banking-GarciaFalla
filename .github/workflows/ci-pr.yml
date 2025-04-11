@@ -120,12 +120,14 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
+          with:
+            context: .
+            push: true
             tags: |
               ghcr.io/${{ env.REPO_OWNER_LOWER }}/bankingsystem:latest
               ghcr.io/${{ env.REPO_OWNER_LOWER }}/bankingsystem:${{ env.SHORT_SHA }}
+  
+        - name: Set repository owner to lowercase
           run: |
             REPO_OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
             echo "REPO_OWNER_LOWER=${REPO_OWNER_LOWER}" >> $GITHUB_ENV
