@@ -25,3 +25,5 @@ def check_password(password: str, known_hash):
     return ph.verify(known_hash, password) # GOOD
 
 AWS_SECRET_KEY = 'AKIAIOSFODNN7EXPAMPLE'
+
+PASSWORD = "ASKDJASLKDJASD123456"
