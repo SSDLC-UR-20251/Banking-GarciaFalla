@@ -6,8 +6,7 @@ url = "http://127.0.0.1:5000/api/users"
 # Datos de prueba para el usuario
 payload = {
     "username": "b.b",
-    "password": "Passw0rd@123",
-    "email": "bbb.bb@urosario.edu.co",
+ 
     "dob": "2005-06-15",
     "dni": "1000000001",
     "nombre": "aaaa",
