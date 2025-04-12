@@ -20,10 +20,7 @@ def show_user(request, username):
 urlpatterns = [url(r'^users/(?P<username>[^/]+)$', show_user)]
 
 # EJEMPLO 2 
+import hashlib
 
-def pointless_else(container):
-    for item in container:
-        if of_interest(item):
-            return item
-    else:
-        raise NotFoundException()
+def get_password_hash(password: str, salt: str):
+    return hashlib.sha256(password + salt).hexdigest() # BAD
