@@ -23,3 +23,5 @@ def get_initial_hash(password: str):
 def check_password(password: str, known_hash):
     ph = PasswordHasher()
     return ph.verify(known_hash, password) # GOOD
+
+AWS_SECRET_KEY = 'AKIAIOSFODNN7EXPAMPLE'
