@@ -18,3 +18,12 @@ def show_user(request, username):
         user = cursor.fetchone()
 
 urlpatterns = [url(r'^users/(?P<username>[^/]+)$', show_user)]
+
+# EJEMPLO 2 
+
+def pointless_else(container):
+    for item in container:
+        if of_interest(item):
+            return item
+    else:
+        raise NotFoundException()
