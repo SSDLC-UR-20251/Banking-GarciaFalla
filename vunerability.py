@@ -1,21 +1,21 @@
 # EJEMPLO 1
-urlpatterns = [
-    # Route to code_execution
-    url(r'^code-ex1$', code_execution_bad, name='code-execution-bad'),
-    url(r'^code-ex2$', code_execution_good, name='code-execution-good')
-]
+@app.route("/example_bad")
+def example_bad():
+    rfs_header = request.args["rfs_header"]
+    response = Response()
+    custom_header = "X-MyHeader-" + rfs_header
+    # BAD: User input is used as part of the header name.
+    response.headers[custom_header] = "HeaderValue" 
+    return response
 
-def code_execution(request):
-    if request.method == 'POST':
-        first_name = base64.decodestring(request.POST.get('first_name', ''))
-        #BAD -- Allow user to define code to be run.
-        exec("setname('%s')" % first_name)
-
-def code_execution(request):
-    if request.method == 'POST':
-        first_name = base64.decodestring(request.POST.get('first_name', ''))
-        #GOOD --Call code directly
-        setname(first_name)
+@app.route("/example_good")
+def example_bad():
+    rfs_header = request.args["rfs_header"]
+    response = Response()
+    custom_header = "X-MyHeader-" + rfs_header.replace("\n", "").replace("\r","").replace(":","")
+    # GOOD: Line break characters are removed from the input.
+    response.headers[custom_header] = "HeaderValue" 
+    return response
 
 # EJEMPLO 2 
 
