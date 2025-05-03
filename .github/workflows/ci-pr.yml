@@ -1,30 +1,29 @@
+name: CI - BankingSystem
+
+permissions:
+  packages: write
+  contents: read
+
 on:
   pull_request:
-    branches:["main"]
+    branches: [main]
 
 jobs:
   secret-detection:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Install necessary packages
         run: |
-          # This is the experimental version of slim-detect-secrets.
-          # It will be updated to the official Yelp/detect-secrets version once the customized plugins are merged.
-          # For more information about slim/detect-secrets, check the following:
-          # 1. https://github.com/NASA-AMMOS/slim-detect-secrets/tree/exp
-          # 2. https://github.com/NASA-AMMOS/slim/blob/d20ee6134a0dc0e0dab11d2d2570e358ef7e4550/continuous-testing/starter-kits/README.md#detect-secrets
           pip install git+https://github.com/NASA-AMMOS/slim-detect-secrets.git@exp
-          # This library is used for JSON operations.
           pip install jq
-          
-      - name: Create an initial .secrets.baseline if .secrets.baseline does not exist
+
+      - name: Create an initial .secrets.baseline if it does not exist
         run: |
           if [ ! -f .secrets.baseline ]; then
-            # This generated baseline file will only be temporarily available on the GitHub side and will not appear in the user's local files.
-            # Scanning an empty folder to generate an initial .secrets.baseline without secrets in the results.
             echo "⚠️ No existing .secrets.baseline file detected. Creating a new blank baseline file."
             mkdir empty-dir
             detect-secrets scan empty-dir > .secrets.baseline
@@ -36,35 +35,99 @@ jobs:
 
       - name: Scan repository for secrets
         run: |
-          # scripts to scan repository for new secrets
-          
-          # backup the list of known secrets
           cp .secrets.baseline .secrets.new
+          detect-secrets scan --exclude-files '.secrets.*' --exclude-files '.git*' > results.json
 
-          # find the secrets in the repository
-          detect-secrets scan --baseline .secrets.new --exclude-files '.secrets.*' --exclude-files '.git*' > result.json
-               
-          # if there is any difference between the known and newly detected secrets, break the build
-          # Function to compare secrets without listing them
           compare_secrets() { diff <(jq -r '.results | keys[] as $key | "\($key),\(.[$key] | .[] | .hashed_secret)"' "$1" | sort) <(jq -r '.results | keys[] as $key | "\($key),\(.[$key] | .[] | .hashed_secret)"' "$2" | sort) >/dev/null; }
         
-          # Check if there's any difference between the known and newly detected secrets
-          if ! compare_secrets .secrets.baseline .secrets.new; then
+          if ! compare_secrets .secrets.baseline results.json; then
             echo "⚠️ Attention Required! ⚠️" >&2
             echo "New secrets have been detected in your recent commit. Due to security concerns, we cannot display detailed information here and we cannot proceed until this issue is resolved." >&2
             echo "" >&2
-            echo "Please follow the steps below on your local machine to reveal and handle the secrets:" >&2
+            echo "Please download the results.json file to reveal and handle the secrets:" >&2
             echo "" >&2
-            echo "1️⃣ Run the 'detect-secrets' tool on your local machine. This tool will identify and clean up the secrets. You can find detailed instructions at this link: https://nasa-ammos.github.io/slim/continuous-testing/starter-kits/#detect-secrets" >&2
-            echo "" >&2
-            echo "2️⃣ After cleaning up the secrets, commit your changes and re-push your update to the repository." >&2
-            echo "" >&2
-            echo "Your efforts to maintain the security of our codebase are greatly appreciated!" >&2
             exit 1
           fi
-      -name: Guardar artefacto detect-secrets
+
+
+      - name: Upload secrets baseline
         uses: actions/upload-artifact@v4
+        if: failure()
         with:
-          name: secrets
-          path: ./results.json
+          name: results
+          path: results.json
           
+
+  semgrep:
+     runs-on: ubuntu-latest
+     container:
+       image: semgrep/semgrep
+     env:
+       SEMGREP_APP_TOKEN: c2a43058b0bfe83483ee27321dc5f94a7b600d10343a44084fa3ba521631cf5e
+       # Opcionalmente, agrega otras variables para mejorar los hipervínculos en Semgrep AppSec Platform:
+       # SEMGREP_REPO_NAME: your-repo-name
+       # SEMGREP_REPO_URL: https://github.com/your-org/your-repo
+       # SEMGREP_BRANCH: ${{ github.ref_name }}
+       # SEMGREP_COMMIT: ${{ github.sha }}
+     steps:
+       - name: Checkout code
+         uses: actions/checkout@v2
+
+       - name: Run Semgrep full scan with custom configuration
+         if: ${{ github.ref == 'refs/heads/main' }}
+         run: semgrep ci --config "p/default" --pro-intrafile
+
+       - name: Run Semgrep diff scan with custom configuration
+         if: ${{ github.ref != 'refs/heads/main' }}
+         env:
+           SEMGREP_BASELINE_REF: main
+
+         run: semgrep ci --config "p/default" --pro-intrafile
+
+
+  sonarqube:
+    name: SonarQube
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: 120d54a4fced5114acf24135d1d5b85f1db31d32
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set repository owner to lowercase
+        run: |
+          REPO_OWNER_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "REPO_OWNER_LOWER=${REPO_OWNER_LOWER}" >> $GITHUB_ENV
+
+      - name: Extract short SHA
+        id: vars
+        run: echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ env.REPO_OWNER_LOWER }}/bankingsystem:latest
+            ghcr.io/${{ env.REPO_OWNER_LOWER }}/bankingsystem:${{ env.SHORT_SHA }}
